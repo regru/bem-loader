@@ -31,10 +31,10 @@ module.exports = function getPattern(entity, levels, exts, opts) {
             pattern = `${root}/${entity.block}/{\.,${elemDelim}${entity.elem}}/${baseName}\.{${exts.join()}}`;
             break;
         case 'blockMod':
-            pattern = `${root}/${entity.block}/{\.,${modDelim}${entity.mod}}/${baseName}\.{${exts.join()}}`;
+            pattern = `${root}/${entity.block}/{\.,${modDelim}${entity.modName}}/${baseName}\.{${exts.join()}}`;
             break;
         case 'elemMod':
-            pattern = `${root}/${entity.block}/{\.,${elemDelim}${entity.elem}}/{\.,${modDelim}${entity.mod}}/${baseName}\.{${exts.join()}}`;
+            pattern = `${root}/${entity.block}/{\.,${elemDelim}${entity.elem}}/{\.,${modDelim}${entity.modName}}/${baseName}\.{${exts.join()}}`;
             break;
     }
 
