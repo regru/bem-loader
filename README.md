@@ -12,7 +12,7 @@ Loader required following params:
 context: 'path/to/modules/root',
 bem: {
     /**
-     * levels sould be string or array of strings
+     * levels should be string or array of strings
      */
     levels: [
         'path/to/first/level',
