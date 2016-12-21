@@ -21,6 +21,8 @@ describe('bem-loader', function() {
             return module.exports;
         },
         async: function() { },
+        addDependency: function() { },
+        emitWarning: console.log,
         query: {},
         resourceQuery: {},
         options: {
