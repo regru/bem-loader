@@ -8,6 +8,10 @@ const utils = require('./libs');
 
 module.exports = function(source) {
 
+    if (this.cacheable) {
+        this.cacheable();
+    }
+
     const content = (typeof source === 'string')
         ? this.exec( source, this.resourcePath )
         : source;
@@ -33,6 +37,7 @@ module.exports = function(source) {
 
                 try {
                     lstat(req);
+                    this.addDependency(req);
                 } catch(e) {
                     this.emitWarning( `Missing module ${basename(req)}` );
                 }
