@@ -1,3 +1,6 @@
+const lstat = require('fs').lstatSync;
+const basename = require('path').basename;
+
 const loaderUtils = require('loader-utils');
 const flatten = require('lodash.flatten');
 
@@ -13,11 +16,11 @@ module.exports = function(source) {
 
     const query = loaderUtils.parseQuery(this.query);
     const resourceQuery = loaderUtils.parseQuery(this.resourceQuery);
-    const params = Object.assign(this.options.bem || {}, resourceQuery, query);
+    const params = Object.assign( this.options.bem || {}, resourceQuery, query );
 
     const modules = utils.normalize(content);
 
-    Promise.all( modules.map( (block) => utils.search(this, block, params.levels, params.extensions) ) )
+    Promise.all( modules.map( (block) => utils.search( this, block, params.levels, params.extensions ) ) )
         .then((pathes) => {
             const result = [];
 
@@ -26,7 +29,15 @@ module.exports = function(source) {
                     continue;
                 }
 
-                result.push( `require(${loaderUtils.stringifyRequest( this, path )});` );
+                const req = loaderUtils.stringifyRequest( this, path );
+
+                try {
+                    lstat(req);
+                } catch(e) {
+                    this.emitWarning( `Missing module ${basename(req)}` );
+                }
+
+                result.push( `require(${req});` );
             }
 
             next( null, result.join('\n') );
