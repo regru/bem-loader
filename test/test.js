@@ -33,7 +33,7 @@ describe('bem-loader', function() {
                 ],
                 extensions: [
                     'deps.js',
-                    'less',
+                    'css',
                     'js',
                 ]
             }
@@ -60,6 +60,13 @@ describe('bem-loader', function() {
         expect(args[ 1 ]).to.match( /b-block-one__elem\.js/ );
         expect(args[ 1 ]).to.match( /b-block-two\.js/ );
         expect(args[ 1 ]).to.match( /b-block-two__elem\.js/ );
+    });
+
+    it('deps file should always be first', function() {
+
+        const args = spy.args[0];
+
+        expect(args[ 1 ].split('\n')[ 0 ]).to.match( /b-block-one\.deps\.js/ );
     });
 
     it('should search elems inside block and elem path', function() {

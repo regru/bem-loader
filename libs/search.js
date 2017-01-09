@@ -18,6 +18,15 @@ module.exports = function(context, entity, levels, exts) {
                 return reject(err);
             }
 
+            matches.sort(function(a, b) {
+
+                if ( /\.deps\.js$/.test(b) ) {
+                    return 1;
+                }
+
+                return 0;
+            });
+
             resolve( matches );
         });
     });
