@@ -4,8 +4,10 @@ const path = require('path');
 const expect = require('chai').expect;
 const sinon = require('sinon');
 
+const bem = require('bem-naming');
 const loader = require('../');
 const bemdecl = require('../fixtures/bem/bundles/all/all.bemdecl');
+const bemdecl2 = require('../fixtures/bem/bundles/nonexists/nonexists.bemdecl');
 
 
 describe('bem-loader', function() {
@@ -22,7 +24,7 @@ describe('bem-loader', function() {
         },
         async: function() { },
         addDependency: function() { },
-        emitWarning: console.log,
+        emitWarning: function() { },
         query: {},
         resourceQuery: {},
         options: {
@@ -40,43 +42,76 @@ describe('bem-loader', function() {
         }
     };
 
-    let spy;
+    describe('normal flow', function() {
+        let spy;
 
-    before(function(done) {
-        spy = sinon.spy(done);
-        context.async = function() {
-            return spy;
-        };
+        before(function(done) {
+            spy = sinon.spy(done);
+            context.async = function() {
+                return spy;
+            };
 
-        loader.call( context, bemdecl );
+            loader.call( context, bemdecl );
+        });
+
+        it('should resolve *.bemdecl.js', function() {
+
+            const args = spy.args[0];
+            expect(args[ 0 ]).to.be.null; //error
+
+            expect(args[ 1 ]).to.match( /b-block-one\.js/ );
+            expect(args[ 1 ]).to.match( /b-block-one__elem\.js/ );
+            expect(args[ 1 ]).to.match( /b-block-two\.js/ );
+            expect(args[ 1 ]).to.match( /b-block-two__elem\.js/ );
+        });
+
+        it('deps file should always be first', function() {
+
+            const args = spy.args[0];
+
+            expect(args[ 1 ].split('\n')[ 0 ]).to.match( /b-block-one\.deps\.js/ );
+        });
+
+        it('should search elems inside block and elem path', function() {
+
+            const args = spy.args[0];
+            expect(args[ 0 ]).to.be.null; //error
+
+            expect(args[ 1 ]).to.match( /b-block-one\.js/ );
+            expect(args[ 1 ]).to.match( /__elem\/b-block-one__elem\.js/ );
+            expect(args[ 1 ]).to.match( /b-block-two\.js/ );
+            expect(args[ 1 ]).to.match( /\/b-block-two__elem\.js/ );
+        });
     });
 
-    it('should resolve *.bemdecl.js', function() {
+    describe('wrong flow', function() {
+        let async;
+        let emitWarning;
 
-        const args = spy.args[0];
-        expect(args[ 0 ]).to.be.null; //error
+        before(function(done) {
+            async = sinon.spy(done);
+            emitWarning = sinon.spy(context, 'emitWarning');
+            context.async = function() {
+                return async;
+            };
 
-        expect(args[ 1 ]).to.match( /b-block-one\.js/ );
-        expect(args[ 1 ]).to.match( /b-block-one__elem\.js/ );
-        expect(args[ 1 ]).to.match( /b-block-two\.js/ );
-        expect(args[ 1 ]).to.match( /b-block-two__elem\.js/ );
-    });
+            loader.call( context, bemdecl2 );
+        });
 
-    it('deps file should always be first', function() {
+        it('should emit warning if block not found' , function() {
+            const args = async.args[0];
+            const firstCall = {
+                block: 'b-block-two',
+                elem: 'nonexist'
+            };
+            const secondCall = {
+                block: 'b-nonexist',
+            };
 
-        const args = spy.args[0];
-
-        expect(args[ 1 ].split('\n')[ 0 ]).to.match( /b-block-one\.deps\.js/ );
-    });
-
-    it('should search elems inside block and elem path', function() {
-
-        const args = spy.args[0];
-        expect(args[ 0 ]).to.be.null; //error
-
-        expect(args[ 1 ]).to.match( /b-block-one\.js/ );
-        expect(args[ 1 ]).to.match( /__elem\/b-block-one__elem\.js/ );
-        expect(args[ 1 ]).to.match( /b-block-two\.js/ );
-        expect(args[ 1 ]).to.match( /\/b-block-two__elem\.js/ );
+            expect(args[ 0 ]).to.be.null; //error
+            expect(emitWarning.called).to.be.true;
+            expect(emitWarning.withArgs(`Entity ${bem.stringify(firstCall)} not found`).called).to.be.true;
+            expect(emitWarning.withArgs(`Entity ${bem.stringify(secondCall)} not found`).called).to.be.true;
+        });
     });
 });

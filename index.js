@@ -34,13 +34,7 @@ module.exports = function(source) {
                 }
 
                 const req = loaderUtils.stringifyRequest( this, path );
-
-                try {
-                    lstat(path);
-                    this.addDependency(path);
-                } catch(e) {
-                    this.emitWarning( `Missing module ${basename(req)}` );
-                }
+                this.addDependency(path);
 
                 result.push( `require(${req});` );
             }

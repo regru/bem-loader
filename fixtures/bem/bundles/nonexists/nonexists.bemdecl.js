@@ -5,6 +5,9 @@ module.exports = [
     },
     {
         block: 'b-block-two',
-        elems: [ 'elem' ],
+        elems: [ 'nonexist' ],
+    },
+    {
+        block: 'b-nonexist',
     },
 ];

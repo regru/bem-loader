@@ -14,8 +14,17 @@ module.exports = function(context, entity, levels, exts) {
 
         new glob.Glob(pattern, options, function(err, matches) {
 
+
             if (err) {
                 return reject(err);
+            }
+
+            if (!matches.length) {
+                context.emitWarning(`Entity ${bem.stringify(entity)} not found`);
+
+                resolve([]);
+
+                return;
             }
 
             matches.sort(function(a, b) {
