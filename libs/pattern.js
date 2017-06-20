@@ -15,10 +15,14 @@ function getRootPath(levels) {
         : `{${levels.join()}}`;
 }
 
-module.exports = function getPattern(entity, levels, exts, opts) {
+module.exports = function getPattern(entity, opts) {
 
     const elemDelim = get(opts, 'elemDelim', ELEMDELIM);
     const modDelim = get(opts, 'modDelim', MODDELIM);
+
+    const levels = get(opts, 'levels');
+    const exts = get(opts, 'extensions');
+
     const root = getRootPath(levels);
     const baseName = bem.stringify(entity);
 

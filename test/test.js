@@ -25,9 +25,7 @@ describe('bem-loader', function() {
         async: function() { },
         addDependency: function() { },
         emitWarning: function() { },
-        query: {},
-        resourceQuery: {},
-        options: {
+        query: {
             context: path.resolve(__dirname, '../', 'fixtures'),
             bem: {
                 levels: [

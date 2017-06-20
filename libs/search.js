@@ -2,17 +2,19 @@ const bem = require('bem-naming');
 const glob = require('glob');
 const get = require('lodash.get');
 
-module.exports = function(context, entity, levels, exts) {
+const ELEMDELIM = '__';
+const MODDELIM = '_';
 
-    const elemDelimiter = get(context.options, 'bem.elemDelimiter', '__');
-    const modDelimiter = get(context.options, 'bem.modDelimiter', '_');
+module.exports = function(context, entity, options) {
+
+    const elemDelimiter = get(options, 'elemDelimiter', ELEMDELIM);
+    const modDelimiter = get(options, 'modDelimiter', MODDELIM);
 
     return new Promise(function(resolve, reject) {
 
-        const pattern = require('./pattern')( entity, levels, exts, get(context.options, 'bem', {}) );
-        const options = {};
+        const pattern = require('./pattern')( entity, options );
 
-        new glob.Glob(pattern, options, function(err, matches) {
+        new glob.Glob(pattern, {}, function(err, matches) {
 
 
             if (err) {

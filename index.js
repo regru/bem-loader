@@ -1,6 +1,3 @@
-const lstat = require('fs').lstatSync;
-const basename = require('path').basename;
-
 const loaderUtils = require('loader-utils');
 const flatten = require('lodash.flatten');
 
@@ -12,19 +9,16 @@ module.exports = function(source) {
         this.cacheable();
     }
 
+    const options = loaderUtils.getOptions(this);
     const content = (typeof source === 'string')
         ? this.exec( source, this.resourcePath )
         : source;
 
     const next = this.async();
 
-    const query = loaderUtils.parseQuery(this.query);
-    const resourceQuery = loaderUtils.parseQuery(this.resourceQuery);
-    const params = Object.assign( this.options.bem || {}, resourceQuery, query );
-
     const modules = utils.normalize(content);
 
-    Promise.all( modules.map( (block) => utils.search( this, block, params.levels, params.extensions ) ) )
+    Promise.all( modules.map( (block) => utils.search( this, block, options.bem ) ) )
         .then((pathes) => {
             const result = [];
 
@@ -45,3 +39,5 @@ module.exports = function(source) {
             next(err);
         });
 };
+
+module.exports.raw = true;
