@@ -39,5 +39,3 @@ module.exports = function(source) {
             next(err);
         });
 };
-
-module.exports.raw = true;
