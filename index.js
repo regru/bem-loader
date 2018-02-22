@@ -39,3 +39,7 @@ module.exports = function(source) {
             next(err);
         });
 };
+
+if (module.hot) {
+    module.hot.decline();
+}
