@@ -28,7 +28,6 @@ module.exports = function(source) {
                 }
 
                 const req = loaderUtils.stringifyRequest( this, path );
-                this.addDependency(path);
 
                 result.push( `require(${req});` );
             }
