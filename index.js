@@ -1,5 +1,6 @@
 const loaderUtils = require('loader-utils');
 const flatten = require('lodash.flatten');
+const exec = require('webpack-loader-api-exec');
 
 const utils = require('./libs');
 
@@ -11,7 +12,7 @@ module.exports = function(source) {
 
     const options = loaderUtils.getOptions(this);
     const content = (typeof source === 'string')
-        ? this.exec( source, this.resourcePath )
+        ? exec( source, this.resourcePath )
         : source;
 
     const next = this.async();
