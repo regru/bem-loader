@@ -3,8 +3,8 @@ const path = require('path');
 
 const expect = require('chai').expect;
 const sinon = require('sinon');
-
 const bem = require('bem-naming');
+
 const loader = require('../');
 const bemdecl = require('../fixtures/bem/bundles/all/all.bemdecl');
 const bemdecl2 = require('../fixtures/bem/bundles/nonexists/nonexists.bemdecl');
@@ -13,15 +13,6 @@ const bemdecl2 = require('../fixtures/bem/bundles/nonexists/nonexists.bemdecl');
 describe('bem-loader', function() {
 
     const context = {
-        exec: function(source) {
-            const module = {
-                exports: {}
-            };
-
-            eval(source);
-
-            return module.exports;
-        },
         async: function() { },
         addDependency: function() { },
         emitWarning: function() { },
