@@ -1,13 +1,13 @@
 {
-  "name": "bem-loader",
+  "name": "@regru/bem-loader",
   "version": "0.2.4",
-  "description": "",
-  "homepage": "https://github.com/shifteee/bem-loader.git",
+  "description": "Webpack loader for bem projects",
+  "homepage": "https://github.com/regru/bem-loader.git",
   "main": "index.js",
   "scripts": {
     "test": "node ./node_modules/mocha/bin/mocha"
   },
-  "author": "shifteee <shiftmailbox@gmail.com>",
+  "author": "Makarychev Andery <shiftmailbox@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "chai": "^3.5.0",
@@ -28,5 +28,20 @@
     "node_modules",
     "test",
     "fixtures"
-  ]
+  ],
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/regru/bem-loader.git"
+  },
+  "keywords": [
+    "webpack",
+    "loader",
+    "bem"
+  ],
+  "bugs": {
+    "url": "https://github.com/regru/bem-loader/issues"
+  }
 }
