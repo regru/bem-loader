@@ -5,6 +5,25 @@ const get = require('lodash.get');
 const ELEMDELIM = '__';
 const MODDELIM = '_';
 
+function dedupMatches(matches) {
+    const cleared = [];
+    const clearIndexes = {};
+
+    const fileNames = matches.map( path => path.split('/').slice(-1)[0] );
+
+    fileNames.forEach((name, i) => {
+        if ( !(name in clearIndexes) ) {
+            clearIndexes[name] = i;
+        }
+    });
+
+    for (let filename in clearIndexes) {
+        cleared.push(clearIndexes[filename]);
+    }
+
+    return cleared.sort().map(idx => matches[idx]);
+}
+
 module.exports = function(context, entity, options) {
 
     const elemDelimiter = get(options, 'elemDelimiter', ELEMDELIM);
@@ -16,6 +35,7 @@ module.exports = function(context, entity, options) {
 
         new glob.Glob(pattern, {}, function(err, matches) {
 
+            matches = dedupMatches(matches);
 
             if (err) {
                 return reject(err);
