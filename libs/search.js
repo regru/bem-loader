@@ -1,24 +1,21 @@
 const bem = require('bem-naming');
 const glob = require('glob');
 const get = require('lodash.get');
+const paths = require('path');
 
 const ELEMDELIM = '__';
 const MODDELIM = '_';
-
-function getFileName(path) {
-    return path.split('/').slice(-1)[0];
-}
 
 // Removes duplicating bem blocks - leaves only first occurences
 function deduplicateMatches(matches) {
     const firstOccurences = {};
 
-    return matches.reduce((dedupArr, path) => {
-        const filename = getFileName(path);
+    return matches.reduce((dedupArr, filepath) => {
+        const filename = path.basename(filepath);
 
         if ( !(filename in firstOccurences) ) {
             firstOccurences[filename] = true;
-            dedupArr.push(path);
+            dedupArr.push(filepath);
         }
 
         return dedupArr;
