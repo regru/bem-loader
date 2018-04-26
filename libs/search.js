@@ -5,23 +5,24 @@ const get = require('lodash.get');
 const ELEMDELIM = '__';
 const MODDELIM = '_';
 
-function dedupMatches(matches) {
-    const cleared = [];
-    const clearIndexes = {};
+function getFileName(path) {
+    return path.split('/').slice(-1)[0];
+}
 
-    const fileNames = matches.map( path => path.split('/').slice(-1)[0] );
+// Removes duplicating bem blocks - leaves only first occurences
+function deduplicateMatches(matches) {
+    const firstOccurences = {};
 
-    fileNames.forEach((name, i) => {
-        if ( !(name in clearIndexes) ) {
-            clearIndexes[name] = i;
+    return matches.reduce((dedupArr, path) => {
+        const filename = getFileName(path);
+
+        if ( !(filename in firstOccurences) ) {
+            firstOccurences[filename] = true;
+            dedupArr.push(path);
         }
-    });
 
-    for (let filename in clearIndexes) {
-        cleared.push(clearIndexes[filename]);
-    }
-
-    return cleared.sort().map(idx => matches[idx]);
+        return dedupArr;
+    }, []);
 }
 
 module.exports = function(context, entity, options) {
@@ -34,14 +35,13 @@ module.exports = function(context, entity, options) {
         const pattern = require('./pattern')( entity, options );
 
         new glob.Glob(pattern, {}, function(err, matches) {
-
-            matches = dedupMatches(matches);
+            const deduplicated = deduplicateMatches(matches);
 
             if (err) {
                 return reject(err);
             }
 
-            if (!matches.length) {
+            if (!deduplicated.length) {
                 context.emitWarning(`Entity ${bem.stringify(entity)} not found`);
 
                 resolve([]);
@@ -49,7 +49,7 @@ module.exports = function(context, entity, options) {
                 return;
             }
 
-            matches.sort(function(a, b) {
+            deduplicated.sort(function(a, b) {
 
                 if ( /\.deps\.js$/.test(b) ) {
                     return 1;
@@ -58,7 +58,7 @@ module.exports = function(context, entity, options) {
                 return 0;
             });
 
-            resolve( matches );
+            resolve( deduplicated );
         });
     });
 };
