@@ -31,7 +31,7 @@ module.exports = function(context, entity, options) {
 
         const pattern = require('./pattern')( entity, options );
 
-        new glob.Glob(pattern, { nosort: true }, function(err, matches) {
+        new glob.Glob(pattern, { nosort: true, nounique: true }, function(err, matches) {
             const deduplicated = deduplicateMatches(matches);
 
             if (err) {
