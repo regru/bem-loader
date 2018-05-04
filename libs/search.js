@@ -1,9 +1,26 @@
 const bem = require('bem-naming');
 const glob = require('glob');
 const get = require('lodash.get');
+const path = require('path');
 
 const ELEMDELIM = '__';
 const MODDELIM = '_';
+
+// Removes duplicating bem blocks - leaves only first occurences
+function deduplicateMatches(matches) {
+    const firstOccurences = {};
+
+    return matches.reduce((dedupArr, filepath) => {
+        const filename = path.basename(filepath);
+
+        if ( !(filename in firstOccurences) ) {
+            firstOccurences[filename] = true;
+            dedupArr.push(filepath);
+        }
+
+        return dedupArr;
+    }, []);
+}
 
 module.exports = function(context, entity, options) {
 
@@ -14,14 +31,14 @@ module.exports = function(context, entity, options) {
 
         const pattern = require('./pattern')( entity, options );
 
-        new glob.Glob(pattern, {}, function(err, matches) {
-
+        new glob.Glob(pattern, { nosort: true, nounique: true }, function(err, matches) {
+            const deduplicated = deduplicateMatches(matches);
 
             if (err) {
                 return reject(err);
             }
 
-            if (!matches.length) {
+            if (!deduplicated.length) {
                 context.emitWarning(`Entity ${bem.stringify(entity)} not found`);
 
                 resolve([]);
@@ -29,7 +46,7 @@ module.exports = function(context, entity, options) {
                 return;
             }
 
-            matches.sort(function(a, b) {
+            deduplicated.sort(function(a, b) {
 
                 if ( /\.deps\.js$/.test(b) ) {
                     return 1;
@@ -38,7 +55,7 @@ module.exports = function(context, entity, options) {
                 return 0;
             });
 
-            resolve( matches );
+            resolve( deduplicated );
         });
     });
 };
