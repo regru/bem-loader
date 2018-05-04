@@ -20,7 +20,7 @@ describe('bem-loader', function() {
             context: path.resolve(__dirname, '../', 'fixtures'),
             bem: {
                 levels: [
-                    path.resolve(__dirname, '../', 'fixtures/bem','blocks')
+                    path.resolve(__dirname, '../', 'fixtures/bem','blocks'),
                 ],
                 extensions: [
                     'deps.js',
@@ -70,6 +70,49 @@ describe('bem-loader', function() {
             expect(args[ 1 ]).to.match( /__elem\/b-block-one__elem\.js/ );
             expect(args[ 1 ]).to.match( /b-block-two\.js/ );
             expect(args[ 1 ]).to.match( /\/b-block-two__elem\.js/ );
+        });
+    });
+
+
+    describe('levels has directories with duplicating bem blocks', function() {
+        let spy;
+
+        context.query.bem.levels.unshift(
+            path.resolve(__dirname, '../', 'fixtures/node_modules/bem','blocks')
+        );
+
+        before(function(done) {
+            spy = sinon.spy(done);
+            context.async = function() {
+                return spy;
+            };
+
+            loader.call( context, bemdecl );
+        });
+
+        it('should only use first block occurence from node_modules for duplicating block', function() {
+
+            const args = spy.args[0];
+            expect(args[ 0 ]).to.be.null; //error
+
+            expect(args[ 1 ]).to.match( /node_modules\/bem\/blocks\/b-block-one\/b-block-one\.js/ );
+            expect(args[ 1 ]).to.match( /node_modules\/bem\/blocks\/b-block-one\/b-block-one\.css/ );
+            expect(args[ 1 ]).to.match( /node_modules\/bem\/blocks\/b-block-one\/__elem\/b-block-one__elem\.js/ );
+        });
+
+        it('should NOT use second block occurence for duplicating block', function() {
+            const args = spy.args[0];
+            expect(args[ 0 ]).to.be.null; //error
+
+            expect(args[ 1 ]).to.not.match( /fixtures\/bem\/blocks\/b-block-one\/b-block-one\.js/ );
+        });
+
+        it('should use regular flow for blocks with no duplicates', function() {
+            const args = spy.args[0];
+            expect(args[ 0 ]).to.be.null; //error
+
+            expect(args[ 1 ]).to.match( /b-block-two\.js/ );
+            expect(args[ 1 ]).to.match( /b-block-two__elem\.js/ );
         });
     });
 

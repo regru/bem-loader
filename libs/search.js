@@ -1,7 +1,7 @@
 const bem = require('bem-naming');
 const glob = require('glob');
 const get = require('lodash.get');
-const paths = require('path');
+const path = require('path');
 
 const ELEMDELIM = '__';
 const MODDELIM = '_';
