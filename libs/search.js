@@ -1,61 +1,56 @@
-const bem = require('bem-naming');
+const { promisify } = require('util');
+const { lstat } = require('fs');
+
+const Bluebird = require('bluebird');
 const glob = require('glob');
-const get = require('lodash.get');
-const path = require('path');
 
-const ELEMDELIM = '__';
-const MODDELIM = '_';
+const Block = require('./block');
 
-// Removes duplicating bem blocks - leaves only first occurences
-function deduplicateMatches(matches) {
-    const firstOccurences = {};
+const lstatAsync = promisify( lstat );
+const search = Bluebird.promisify( glob );
 
-    return matches.reduce((dedupArr, filepath) => {
-        const filename = path.basename(filepath);
+module.exports = function( entity, options ) {
+    if ( !( options.levels && options.levels.length ) ) {
+        throw new Error('No levels was set');
+    }
 
-        if ( !(filename in firstOccurences) ) {
-            firstOccurences[filename] = true;
-            dedupArr.push(filepath);
-        }
+    const block = new Block( entity, options );
+    const promises = options.levels.map( function( level ) {
+        const blockPath = `${level}/${entity.block}`;
 
-        return dedupArr;
-    }, []);
-}
-
-module.exports = function(context, entity, options) {
-
-    const elemDelimiter = get(options, 'elemDelimiter', ELEMDELIM);
-    const modDelimiter = get(options, 'modDelimiter', MODDELIM);
-
-    return new Promise(function(resolve, reject) {
-
-        const pattern = require('./pattern')( entity, options );
-
-        new glob.Glob(pattern, { nosort: true, nounique: true }, function(err, matches) {
-            const deduplicated = deduplicateMatches(matches);
-
-            if (err) {
-                return reject(err);
-            }
-
-            if (!deduplicated.length) {
-                context.emitWarning(`Entity ${bem.stringify(entity)} not found`);
-
-                resolve([]);
-
-                return;
-            }
-
-            deduplicated.sort(function(a, b) {
-
-                if ( /\.deps\.js$/.test(b) ) {
-                    return 1;
+        return lstatAsync( `${level}/${entity.block}` )
+            .then( function( stat ) {
+                if ( stat.isDirectory() ) {
+                    return blockPath;
                 }
 
-                return 0;
-            });
+                return false;
+            } )
+            .catch( function() {
+                return false;
+            } );
+    } );
 
-            resolve( deduplicated );
-        });
-    });
+    return Bluebird.filter( promises, res => res )
+        .spread( function( directory ) {
+            if ( !directory ) {
+                return Bluebird.reject( `Entity ${block.toString()} not found` );
+            }
+
+            return search( `${directory}/${block.toGlobPattern()}` );
+        } )
+        .then( function( matches ) {
+            if ( !matches.length ) {
+                return Bluebird.reject( `No files found for ${block.toString()}` );
+            }
+
+            return matches
+                .sort( function( a, b ) {
+                    if ( /\.deps\.js$/.test( b ) ) {
+                        return 1;
+                    }
+
+                    return 0;
+                } );
+        } );
 };

@@ -4,27 +4,27 @@ const exec = require('webpack-loader-api-exec');
 
 const utils = require('./libs');
 
-module.exports = function(source) {
+module.exports = function( source ) {
 
-    if (this.cacheable) {
+    if ( this.cacheable ) {
         this.cacheable();
     }
 
-    const options = loaderUtils.getOptions(this);
-    const content = (typeof source === 'string')
+    const options = loaderUtils.getOptions( this );
+    const content = ( typeof source === 'string' )
         ? exec( source, this.resourcePath )
         : source;
 
     const next = this.async();
 
-    const modules = utils.normalize(content);
+    const modules = utils.normalize( content );
 
-    Promise.all( modules.map( (block) => utils.search( this, block, options.bem ) ) )
-        .then((pathes) => {
+    Promise.all( modules.map( ( block ) => utils.search( block, options.bem ) ) )
+        .then( ( pathes ) => {
             const result = [];
 
-            for( let path of flatten(pathes) ) {
-                if (!path) {
+            for ( let path of flatten( pathes ) ) {
+                if ( !path ) {
                     continue;
                 }
 
@@ -34,8 +34,15 @@ module.exports = function(source) {
             }
 
             next( null, result.join('\n') );
-        })
-        .catch(function(err) {
-            next(err);
-        });
+        } )
+        .catch( ( err ) => {
+
+            if ( typeof err === 'string' ) {
+                this.emitWarning( err );
+
+                return void next( null );
+            }
+
+            next( err );
+        } );
 };
