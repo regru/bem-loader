@@ -4,6 +4,7 @@
     "it": true,
     "describe": true,
     "before": true,
-    "beforeEach": true
+    "beforeEach": true,
+    "afterEach": true
   }
 }

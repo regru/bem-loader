@@ -1,45 +1,9 @@
-// const path = require('path');
-
 const createNaming = require('bem-naming');
 const get = require('lodash.get');
 
 const ELEMDELIM = '__';
 const MODDELIM = '_';
 const EXTS = [ 'js', 'css' ];
-
-// function getRootPath( levels ) {
-//
-//     validateLevels( levels );
-//
-//     if ( typeof levels === 'string' ) {
-//         return levels;
-//     }
-//
-//     return ( levels.length === 1 )
-//         ? levels[ 0 ]
-//         : `{${levels.join()}}`;
-// }
-//
-// function checkIfLevelsIsAbsolute( levels ) {
-//
-//     for ( let level of levels ) {
-//         if ( !path.isAbsolute( level ) ) {
-//             throw new Error('`levels` should be setted as absolute path');
-//         }
-//     }
-// }
-//
-// function validateLevels( levels ) {
-//     if ( !levels ) {
-//         throw new Error('You should provide `levels` via options');
-//     }
-//
-//     if ( typeof levels === 'string' ) {
-//         checkIfLevelsIsAbsolute( [ levels ] );
-//     }
-//
-//     checkIfLevelsIsAbsolute( levels );
-// }
 
 module.exports = class {
     constructor( entity, opts ) {

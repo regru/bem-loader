@@ -19,7 +19,7 @@ module.exports = function( source ) {
 
     const modules = utils.normalize( content );
 
-    Promise.all( modules.map( ( block ) => utils.search( block, options.bem ) ) )
+    Promise.all( modules.map( ( block ) => utils.search( this, block, options.bem ) ) )
         .then( ( pathes ) => {
             const result = [];
 

@@ -9,7 +9,7 @@ const Block = require('./block');
 const lstatAsync = promisify( lstat );
 const search = Bluebird.promisify( glob );
 
-module.exports = function( entity, options ) {
+module.exports = function( context, entity, options ) {
     if ( !( options.levels && options.levels.length ) ) {
         throw new Error('No levels was set');
     }
@@ -34,14 +34,18 @@ module.exports = function( entity, options ) {
     return Bluebird.filter( promises, res => res )
         .spread( function( directory ) {
             if ( !directory ) {
-                return Bluebird.reject( `Entity ${block.toString()} not found` );
+                context.emitWarning( `Entity ${block.toString()} not found` );
+
+                return [];
             }
 
             return search( `${directory}/${block.toGlobPattern()}` );
         } )
         .then( function( matches ) {
             if ( !matches.length ) {
-                return Bluebird.reject( `No files found for ${block.toString()}` );
+                context.emitWarning( `No files found for ${block.toString()}` );
+
+                return [];
             }
 
             return matches

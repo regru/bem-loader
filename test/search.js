@@ -2,14 +2,10 @@ const path = require('path');
 
 const search = require('../libs/search');
 const expect = require('chai').expect;
-
+const sinon = require('sinon');
 
 const block = {
     block : 'b-block-two',
-};
-const blockElem = {
-    block : 'b-block-two',
-    elem  : 'elem',
 };
 const levels = [
     path.resolve( __dirname, 'fixtures/bem','blocks' ),
@@ -22,24 +18,35 @@ const duplicateFirstLevels = [
 const extensions = [
     'deps.js', 'js', 'css',
 ];
+const context = {
+    emitWarning() {},
+};
 
 describe( 'search', function() {
-    it( 'should be rejected with simple string message if found nothing', function() {
-        return search( { block: 'nonexistent' }, { levels } )
+    let spy;
+
+    beforeEach( function() {
+        spy = sinon.spy( context , 'emitWarning' );
+
+    } );
+
+    afterEach( function() {
+        context.emitWarning.restore();
+    } );
+
+    it( 'should emit warning if found nothing', function() {
+        return search( context, { block: 'nonexistent' }, { levels } )
             .then( function() {
-                throw new Error('Should emit exception');
-            } )
-            .catch( function( err ) {
-                expect( err ).to.be.a('string');
+                expect( spy.called ).to.be.true;
             } );
     } );
 
     it( 'should throw exception if levels not set', function() {
-        expect( () => search( block ) ).to.throw();
+        expect( () => search( context, block ) ).to.throw();
     } );
 
     it( 'should return absolute path for block\'s files', function() {
-        return search( block, {
+        return search( context, block, {
             levels,
             extensions,
         } ).then( function( results ) {
@@ -49,7 +56,7 @@ describe( 'search', function() {
     } );
 
     it( 'should return first occurrence', function() {
-        return search( block, {
+        return search( context, block, {
             levels : duplicateFirstLevels,
             extensions,
         } ).then( function( results ) {
@@ -70,7 +77,7 @@ describe( 'search', function() {
     } );
 
     it( '.deps file should always be first', function() {
-        return search( block, {
+        return search( context, block, {
             levels : duplicateFirstLevels,
             extensions,
         } ).then( function( results ) {
