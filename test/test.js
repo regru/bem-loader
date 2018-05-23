@@ -1,149 +1,84 @@
-const fs = require('fs');
+const { lstat } = require('fs');
 const path = require('path');
+const { promisify } = require('util');
 
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const bem = require('bem-naming');
 
 const loader = require('../');
-const bemdecl = require('../fixtures/bem/bundles/all/all.bemdecl');
-const bemdecl2 = require('../fixtures/bem/bundles/nonexists/nonexists.bemdecl');
+const bemdecl = require('./fixtures/bem/bundles/all/all.bemdecl');
+const getStat = promisify( lstat );
+
+const FILES = [
+    'b-block-one.deps.js',
+    'b-block-one.js',
+    'b-block-one.css',
+    'b-block-one__elem.js',
+    'b-block-two.js',
+    'b-block-two__elem.js',
+];
 
 
-describe('bem-loader', function() {
+describe( 'bem-loader', function() {
 
     const context = {
-        async: function() { },
-        addDependency: function() { },
-        emitWarning: function() { },
-        query: {
-            context: path.resolve(__dirname, '../', 'fixtures'),
-            bem: {
-                levels: [
-                    path.resolve(__dirname, '../', 'fixtures/bem','blocks'),
+        async         : function() {},
+        addDependency : function() {},
+        emitWarning   : function() {},
+        query         : {
+            context : path.resolve( __dirname, 'fixtures' ),
+            bem     : {
+                levels : [
+                    path.resolve( __dirname, 'fixtures/bem','blocks' ),
+                    path.resolve( __dirname, 'fixtures/bem','blocks.duplicated' ),
                 ],
-                extensions: [
+                extensions : [
                     'deps.js',
                     'css',
                     'js',
-                ]
-            }
-        }
+                ],
+            },
+        },
     };
 
-    describe('normal flow', function() {
-        let spy;
+    let spy;
 
-        before(function(done) {
-            spy = sinon.spy(done);
-            context.async = function() {
-                return spy;
-            };
+    beforeEach( function( done ) {
+        spy = sinon.spy( done );
+        context.async = function() {
+            return spy;
+        };
 
-            loader.call( context, bemdecl );
-        });
+        loader.call( context, bemdecl );
+    } );
 
-        it('should resolve *.bemdecl.js', function() {
+    it( 'should resolve *.bemdecl.js', function() {
+        const [ error, result ] = Array.from( spy.args )[0];
 
-            const args = spy.args[0];
-            expect(args[ 0 ]).to.be.null; //error
+        let paths;
 
-            expect(args[ 1 ]).to.match( /b-block-one\.js/ );
-            expect(args[ 1 ]).to.match( /b-block-one__elem\.js/ );
-            expect(args[ 1 ]).to.match( /b-block-two\.js/ );
-            expect(args[ 1 ]).to.match( /b-block-two__elem\.js/ );
-        });
+        expect( error, `${error}` ).to.be.null;
 
-        it('deps file should always be first', function() {
+        paths = result.match( /(?:\/[\d\w.-]+)+/ig );
 
-            const args = spy.args[0];
+        expect( paths.length ).to.be.above( 0, 'Empty result' );
 
-            expect(args[ 1 ].split('\n')[ 0 ]).to.match( /b-block-one\.deps\.js/ );
-        });
+        return Promise
+            .all(
+                paths.map( p_ => {
+                    return Promise.all( [ p_, getStat( p_ ) ] );
+                } )
+            )
+            .then( stats => {
+                expect( stats.length ).to.equal( FILES.length );
 
-        it('should search elems inside block and elem path', function() {
+                for ( let [ file, stat ] of stats ) {
+                    if ( !stat.isFile() ) {
+                        throw new Error( `${file} is not a file` );
+                    }
 
-            const args = spy.args[0];
-            expect(args[ 0 ]).to.be.null; //error
-
-            expect(args[ 1 ]).to.match( /b-block-one\.js/ );
-            expect(args[ 1 ]).to.match( /__elem\/b-block-one__elem\.js/ );
-            expect(args[ 1 ]).to.match( /b-block-two\.js/ );
-            expect(args[ 1 ]).to.match( /\/b-block-two__elem\.js/ );
-        });
-    });
-
-
-    describe('levels has directories with duplicating bem blocks', function() {
-        let spy;
-
-        context.query.bem.levels.unshift(
-            path.resolve(__dirname, '../', 'fixtures/node_modules/bem','blocks')
-        );
-
-        before(function(done) {
-            spy = sinon.spy(done);
-            context.async = function() {
-                return spy;
-            };
-
-            loader.call( context, bemdecl );
-        });
-
-        it('should only use first block occurence from node_modules for duplicating block', function() {
-
-            const args = spy.args[0];
-            expect(args[ 0 ]).to.be.null; //error
-
-            expect(args[ 1 ]).to.match( /node_modules\/bem\/blocks\/b-block-one\/b-block-one\.js/ );
-            expect(args[ 1 ]).to.match( /node_modules\/bem\/blocks\/b-block-one\/b-block-one\.css/ );
-            expect(args[ 1 ]).to.match( /node_modules\/bem\/blocks\/b-block-one\/__elem\/b-block-one__elem\.js/ );
-        });
-
-        it('should NOT use second block occurence for duplicating block', function() {
-            const args = spy.args[0];
-            expect(args[ 0 ]).to.be.null; //error
-
-            expect(args[ 1 ]).to.not.match( /fixtures\/bem\/blocks\/b-block-one\/b-block-one\.js/ );
-        });
-
-        it('should use regular flow for blocks with no duplicates', function() {
-            const args = spy.args[0];
-            expect(args[ 0 ]).to.be.null; //error
-
-            expect(args[ 1 ]).to.match( /b-block-two\.js/ );
-            expect(args[ 1 ]).to.match( /b-block-two__elem\.js/ );
-        });
-    });
-
-    describe('wrong flow', function() {
-        let async;
-        let emitWarning;
-
-        before(function(done) {
-            async = sinon.spy(done);
-            emitWarning = sinon.spy(context, 'emitWarning');
-            context.async = function() {
-                return async;
-            };
-
-            loader.call( context, bemdecl2 );
-        });
-
-        it('should emit warning if block not found' , function() {
-            const args = async.args[0];
-            const firstCall = {
-                block: 'b-block-two',
-                elem: 'nonexist'
-            };
-            const secondCall = {
-                block: 'b-nonexist',
-            };
-
-            expect(args[ 0 ]).to.be.null; //error
-            expect(emitWarning.called).to.be.true;
-            expect(emitWarning.withArgs(`Entity ${bem.stringify(firstCall)} not found`).called).to.be.true;
-            expect(emitWarning.withArgs(`Entity ${bem.stringify(secondCall)} not found`).called).to.be.true;
-        });
-    });
-});
+                    expect( path.basename( file ) ).to.be.oneOf( FILES );
+                }
+            } );
+    } );
+} );
