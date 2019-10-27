@@ -34,7 +34,11 @@ module.exports = function( context, entity, options ) {
     return Bluebird.filter( promises, res => res )
         .spread( function( directory ) {
             if ( !directory ) {
-                context.emitWarning( `Entity ${block.toString()} not found` );
+                const message = `Entity ${block.toString()} not found`;
+
+                options.strict
+                    ? throw new Error( message )
+                    : context.emitWarning( message );
 
                 return [];
             }
@@ -43,7 +47,11 @@ module.exports = function( context, entity, options ) {
         } )
         .then( function( matches ) {
             if ( !matches.length ) {
-                context.emitWarning( `No files found for ${block.toString()}` );
+                const message = `No files found for ${block.toString()}`;
+
+                options.strict
+                    ? throw new Error( message )
+                    : context.emitWarning( message );
 
                 return [];
             }
