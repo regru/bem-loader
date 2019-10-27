@@ -25,7 +25,8 @@ bem: {
         'js',
     ],
     elemDelim: '__' // optional, default '__'
-    modDelim: '_' //optional, default '_'
+    modDelim: '_' //optional, default '_',
+    strict: false //optional, default false. throws if no files is found
 },
 ```
 
