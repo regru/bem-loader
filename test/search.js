@@ -40,6 +40,10 @@ describe( 'search', function() {
                 expect( spy.called ).to.be.true;
             } );
     } );
+    
+    it( 'should throw if found nothing and options.strict == true', function() {
+        expect( () => search( context, { block: 'nonexistent' }, { levels, strict: true } ) ).to.throw();
+    } );
 
     it( 'should throw exception if levels not set', function() {
         expect( () => search( context, block ) ).to.throw();
