@@ -38,7 +38,9 @@ module.exports = function( source ) {
         .catch( ( err ) => {
 
             if ( typeof err === 'string' ) {
-                this.emitWarning( err );
+                const emitMethod = options.strict ? 'emitError' : 'emitWarning';
+
+                this[emitMethod]( err );
 
                 return void next( null );
             }

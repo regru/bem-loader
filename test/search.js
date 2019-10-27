@@ -1,8 +1,12 @@
 const path = require('path');
 
 const search = require('../libs/search');
-const expect = require('chai').expect;
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
 const sinon = require('sinon');
+const expect = chai.expect;
+
+chai.use( chaiAsPromised );
 
 const block = {
     block : 'b-block-two',
@@ -20,29 +24,37 @@ const extensions = [
 ];
 const context = {
     emitWarning() {},
+    emitError() {},
 };
 
 describe( 'search', function() {
-    let spy;
+    let warningSpy;
+    let errorSpy;
 
     beforeEach( function() {
-        spy = sinon.spy( context , 'emitWarning' );
-
+        warningSpy = sinon.spy( context , 'emitWarning' );
+        errorSpy = sinon.spy( context , 'emitError' );
     } );
 
     afterEach( function() {
         context.emitWarning.restore();
+        context.emitError.restore();
     } );
 
     it( 'should emit warning if found nothing', function() {
         return search( context, { block: 'nonexistent' }, { levels } )
             .then( function() {
-                expect( spy.called ).to.be.true;
+                expect( warningSpy.called ).to.be.true;
             } );
     } );
-    
-    it( 'should throw if found nothing and options.strict == true', function() {
-        expect( () => search( context, { block: 'nonexistent' }, { levels, strict: true } ) ).to.throw();
+
+    it( 'should emit error if found nothing and options.strict == true', function() {
+        return search( context, { block: 'nonexistent' }, {
+            levels,
+            strict : true,
+        } ).then( function() {
+            expect( errorSpy.called ).to.be.true;
+        } );
     } );
 
     it( 'should throw exception if levels not set', function() {

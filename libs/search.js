@@ -31,14 +31,12 @@ module.exports = function( context, entity, options ) {
             } );
     } );
 
+    const emitMethod  = options.strict ? 'emitError' : 'emitWarning';
+
     return Bluebird.filter( promises, res => res )
         .spread( function( directory ) {
             if ( !directory ) {
-                const message = `Entity ${block.toString()} not found`;
-
-                options.strict
-                    ? throw new Error( message )
-                    : context.emitWarning( message );
+                context[emitMethod]( `Entity ${block.toString()} not found` );
 
                 return [];
             }
@@ -47,11 +45,7 @@ module.exports = function( context, entity, options ) {
         } )
         .then( function( matches ) {
             if ( !matches.length ) {
-                const message = `No files found for ${block.toString()}`;
-
-                options.strict
-                    ? throw new Error( message )
-                    : context.emitWarning( message );
+                context[emitMethod]( `No files found for ${block.toString()}` );
 
                 return [];
             }
