@@ -22,7 +22,7 @@
     "bem-naming": "^1.0.1",
     "bluebird": "^3.5.1",
     "glob": "^7.1.2",
-    "loader-utils": "^1.1.0",
+    "loader-utils": "^3.2.1",
     "lodash.flatten": "^4.4.0",
     "lodash.get": "^4.4.2",
     "webpack-loader-api-exec": "^0.1.1"
