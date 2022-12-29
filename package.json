@@ -1,6 +1,6 @@
 {
   "name": "@regru/bem-loader",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Webpack loader for BEM projects",
   "homepage": "https://github.com/shifteee/bem-loader.git",
   "main": "index.js",
@@ -18,9 +18,9 @@
     "sinon": "^1.17.6"
   },
   "dependencies": {
+    "@regru/deps-normalize": "^2.5.0",
     "bem-naming": "^1.0.1",
     "bluebird": "^3.5.1",
-    "deps-normalize": "git+https://github.com/regru/deps-normalize.git#v2.5.0",
     "glob": "^7.1.2",
     "loader-utils": "^1.1.0",
     "lodash.flatten": "^4.4.0",

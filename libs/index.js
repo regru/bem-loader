@@ -1,4 +1,4 @@
 module.exports = {
-    normalize : require('deps-normalize'),
+    normalize : require('@regru/deps-normalize'),
     search    : require('./search'),
 };
